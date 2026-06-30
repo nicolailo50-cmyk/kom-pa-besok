@@ -443,8 +443,9 @@ knappNei.addEventListener('touchstart', function (e) {
   flyttNei();
 }, { passive: false });
 
-// På desktop: la den også vike når musa nærmer seg (hyggelig detalj, ikke nødvendig på mobil)
-knappNei.addEventListener('mouseenter', flyttNei);
+// Merk: ingen "mouseenter"-logikk. Knappen skal KUN reagere på faktisk trykk,
+// ikke når musepekeren nærmer seg. Den flytter seg idet man trykker, så et
+// "Nei"-trykk aldri registreres – man kommer bare videre ved å trykke "Ja".
 
 // Skulle noen likevel rekke et klikk – ignorer det fullstendig
 knappNei.addEventListener('click', function (e) {
