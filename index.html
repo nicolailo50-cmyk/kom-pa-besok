@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<!-- Mobil-først: portrettmodus på telefon. user-scalable=no hindrer utilsiktet zoom når man jager Nei-knappen -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Hei Signe 👀</title>
+
+<!-- Valgfri Google Font. Siden fungerer fint uten nett – da faller den tilbake på system-fonten under. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  /* =========================================================
+     FARGER – juster alt her for å endre stemningen
+     Dempet, varm palett: terrakotta / rosa-beige / krem
+     ========================================================= */
+  :root {
+    --krem:        #fbf3ea;  /* bakgrunn, lys */
+    --krem-dyp:    #f3e3d3;  /* bakgrunn, litt dypere (gradient bunn) */
+    --rosa-beige:  #e9cdbf;  /* kort / flater */
+    --terrakotta:  #c97b5e;  /* hovedaksent, knapper */
+    --terrakotta-m:#b86a4e;  /* mørkere terrakotta (hover/trykk) */
+    --rodbrun:     #8a4b3c;  /* mykt rødbrunt, til tekst-aksenter */
+    --tekst:       #5a3f36;  /* brødtekst, varm brun */
+    --tekst-svak:  #927065;  /* dempet undertekst */
+    --hvit-mlk:    #fffaf4;  /* "melkehvit" kort-bakgrunn */
+  }
+
+  /* =========================================================
+     GRUNNLEGGENDE OPPSETT
+     ========================================================= */
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+
+  body {
+    font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--tekst);
+    background: linear-gradient(165deg, var(--krem) 0%, var(--krem-dyp) 100%);
+    /* Sentrer alt innhold, mobil-først */
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow: hidden; /* hindrer at jagende Nei-knapp lager scroll */
+    position: relative;
+  }
+
+  /* Selve "kortet" som alt innhold ligger i */
+  .kort {
+    width: 100%;
+    max-width: 420px;
+    background: var(--hvit-mlk);
+    border-radius: 28px;
+    padding: 40px 28px;
+    box-shadow: 0 18px 50px -18px rgba(138, 75, 60, 0.35);
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* =========================================================
+     SKJERMER (seksjoner) – én vises om gangen
+     ========================================================= */
+  .skjerm { display: none; }
+  .skjerm.aktiv {
+    display: block;
+    /* Myk inn-toning + lett glid oppover ved overgang */
+    animation: tonInn 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+
+  @keyframes tonInn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* =========================================================
+     TYPOGRAFI
+     ========================================================= */
+  .pyntetekst {
+    font-family: "Nunito", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--terrakotta);
+    margin: 0 0 18px;
+    opacity: 0.85;
+  }
+
+  h1, h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--rodbrun);
+    margin: 0 0 14px;
+  }
+
+  h1 { font-size: 1.9rem; }
+  h2 { font-size: 1.55rem; }
+
+  p.under {
+    font-size: 1.02rem;
+    line-height: 1.5;
+    color: var(--tekst-svak);
+    margin: 0 0 28px;
+  }
+
+  /* =========================================================
+     KNAPPER
+     ========================================================= */
+  .knapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .knapp {
+    font-family: "Nunito", sans-serif;
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: var(--hvit-mlk);
+    background: var(--terrakotta);
+    border: none;
+    border-radius: 16px;
+    padding: 16px 22px;
+    cursor: pointer;
+    /* Touch-vennlig minstehøyde */
+    min-height: 56px;
+    box-shadow: 0 8px 18px -8px rgba(201, 123, 94, 0.7);
+    transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
+    user-select: none;
+  }
+
+  /* Liten tap/hover-respons */
+  .knapp:hover  { background: var(--terrakotta-m); }
+  .knapp:active { transform: scale(0.96); }
+
+  /* Sekundær, rolig knapp-variant (f.eks. de "motvillige" svarene) */
+  .knapp.mild {
+    background: var(--rosa-beige);
+    color: var(--rodbrun);
+    box-shadow: 0 8px 18px -10px rgba(138, 75, 60, 0.45);
+  }
+  .knapp.mild:hover { background: #e0bda9; }
+
+  /* =========================================================
+     SPØRSMÅL 4 – Ja/Nei-oppsett
+     ========================================================= */
+  /* Området der Ja/Nei lever. relative slik at Nei kan flyttes fritt innenfor kortet. */
+  .ja-nei {
+    position: relative;
+    min-height: 150px;
+    margin-top: 8px;
+  }
+
+  .knapp-ja {
+    width: 100%;
+    font-size: 1.25rem;
+    padding: 20px;
+  }
+
+  /* Nei-knappen: starter HELT lik Ja-knappen (samme størrelse/farge),
+     men hopper rundt så snart man prøver å trykke. */
+  #knappNei {
+    position: relative;
+    width: 100%;
+    margin-top: 14px;
+    font-size: 1.25rem;
+    padding: 20px;
+    /* Samme terrakotta-utseende som Ja */
+    background: var(--terrakotta);
+    color: var(--hvit-mlk);
+    box-shadow: 0 8px 18px -8px rgba(201, 123, 94, 0.7);
+    /* Egen, raskere transition så hoppet føles kvikt */
+    transition: transform 0.16s ease, font-size 0.16s ease, padding 0.16s ease;
+    touch-action: manipulation;
+  }
+  /* Når den er "på rømmen" tas den ut av flyten og posisjoneres fritt.
+     width:auto så den krymper til teksten i stedet for å fylle hele skjermen. */
+  #knappNei.rommer {
+    position: fixed;
+    width: auto;
+    margin-top: 0;
+    z-index: 50;
+  }
+
+  /* =========================================================
+     FEIRING
+     ========================================================= */
+  .feiring-emoji {
+    font-size: 3rem;
+    margin-bottom: 6px;
+    animation: sprett 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes sprett {
+    0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+
+  .start-paa-nytt {
+    margin-top: 26px;
+    background: none;
+    border: none;
+    color: var(--tekst-svak);
+    font-family: "Nunito", sans-serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    padding: 8px;
+  }
+  .start-paa-nytt:hover { color: var(--rodbrun); }
+
+  /* Liten "fremdriftsprikk"-rad øverst i kortet */
+  .prikker {
+    display: flex;
+    gap: 7px;
+    justify-content: center;
+    margin-bottom: 22px;
+  }
+  .prikk {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--rosa-beige);
+    transition: background 0.3s ease, transform 0.3s ease;
+  }
+  .prikk.fylt { background: var(--terrakotta); transform: scale(1.15); }
+
+  /* Konfetti / hjerter ligger i et lag over alt, men tar ikke imot trykk */
+  #feiringLag {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 5;
+  }
+  .konfetti, .hjerte {
+    position: absolute;
+    top: -40px;
+    will-change: transform, opacity;
+  }
+  .konfetti {
+    width: 9px; height: 14px;
+    border-radius: 2px;
+    animation: dal var(--tid) linear forwards;
+  }
+  .hjerte {
+    font-size: 1.3rem;
+    animation: stigOpp var(--tid) ease-in forwards;
+  }
+  @keyframes dal {
+    0%   { transform: translateY(0) rotate(0); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+  @keyframes stigOpp {
+    0%   { transform: translateY(100vh) scale(0.7); opacity: 0; }
+    15%  { opacity: 1; }
+    100% { transform: translateY(-20vh) scale(1.1); opacity: 0; }
+  }
+
+  /* Respekter brukere som vil ha mindre bevegelse */
+  @media (prefers-reduced-motion: reduce) {
+    .skjerm.aktiv, .feiring-emoji { animation: none; }
+    #knappNei { transition: none; }
+  }
+</style>
+</head>
+
+<body>
+  <!-- ================= HOVEDKORT ================= -->
+  <main class="kort">
+
+    <!-- Fremdriftsprikker (5 steg: intro + 4 spørsmål) -->
+    <div class="prikker" id="prikker" aria-hidden="true">
+      <span class="prikk"></span>
+      <span class="prikk"></span>
+      <span class="prikk"></span>
+      <span class="prikk"></span>
+      <span class="prikk"></span>
+    </div>
+
+    <!-- ===== 0. INTRO ===== -->
+    <section class="skjerm aktiv" data-steg="0">
+      <p class="pyntetekst">En liten invitasjon</p>
+      <h1>Hei Signe 👀</h1>
+      <p class="under">Jeg har et viktig spørsmål til deg…<br />(eller fire)</p>
+      <div class="knapper">
+        <button class="knapp" onclick="nesteSteg(1)">Greit, kjør på</button>
+      </div>
+    </section>
+
+    <!-- ===== 1. SAVNER DU MEG ===== -->
+    <section class="skjerm" data-steg="1">
+      <p class="pyntetekst">Spørsmål 1 av 4</p>
+      <h2>Først, det viktigste:<br />savner du meg litt?</h2>
+      <p class="under">(Det finnes ingen feil svar her. Det finnes faktisk ikke noe nei-svar i det hele tatt.)</p>
+      <div class="knapper">
+        <button class="knapp" onclick="nesteSteg(2)">Ja</button>
+        <button class="knapp" onclick="nesteSteg(2)">Veldig</button>
+        <button class="knapp" onclick="nesteSteg(2)">Sykt mye</button>
+      </div>
+    </section>
+
+    <!-- ===== 2. TØR DU KRYSSE BRUA ===== -->
+    <section class="skjerm" data-steg="2">
+      <p class="pyntetekst">Spørsmål 2 av 4</p>
+      <h2>Tør du å krysse brua og forlate Kvaløya for en kveld?</h2>
+      <p class="under">Det er trygt på andre siden. Lover.</p>
+      <div class="knapper">
+        <button class="knapp" onclick="nesteSteg(3)">Klart det</button>
+        <button class="knapp mild" onclick="nesteSteg(3)">Jeg er ikke redd for fastlandet</button>
+      </div>
+    </section>
+
+    <!-- ===== 3. TROMSDALEN ER FINEST ===== -->
+    <section class="skjerm" data-steg="3">
+      <p class="pyntetekst">Spørsmål 3 av 4</p>
+      <h2>Visste du forresten at Tromsdalen er den fineste bydelen i Tromsø?</h2>
+      <p class="under">Dette er ikke en mening. Det er allmennkunnskap.</p>
+      <div class="knapper">
+        <button class="knapp" onclick="nesteSteg(4)">Ja, det vet jo alle</button>
+        <button class="knapp mild" onclick="nesteSteg(4)">…motvillig enig</button>
+      </div>
+    </section>
+
+    <!-- ===== 4. SELVE SPØRSMÅLET ===== -->
+    <section class="skjerm" data-steg="4">
+      <p class="pyntetekst">Det egentlige spørsmålet</p>
+      <h2>Vil du komme på besøk til meg i (den fine bydelen) Tromsdalen?</h2>
+      <p class="under">For å være helt tydelig: jeg har veldig lyst til at du skal komme. ❤️</p>
+      <div class="ja-nei">
+        <button class="knapp knapp-ja" onclick="visFeiring()">Ja!</button>
+        <!-- Nei-knappen: jages av JS-en lenger ned -->
+        <button class="knapp" id="knappNei">Nei</button>
+      </div>
+    </section>
+
+    <!-- ===== 5. FEIRING ===== -->
+    <section class="skjerm" data-steg="5">
+      <div class="feiring-emoji">🎉</div>
+      <p class="pyntetekst">Visste det</p>
+      <h1>Vi sees, Signe.</h1>
+      <p class="under">Brua holder, kaffen er på, og Tromsdalen tar imot deg med åpne armer. Gi meg beskjed når du kommer, så er alt klart. ✨</p>
+      <div class="knapper">
+        <button class="start-paa-nytt" onclick="startPaaNytt()">↺ Start på nytt</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Lag for konfetti og hjerter ved feiring -->
+  <div id="feiringLag" aria-hidden="true"></div>
+
+<script>
+/* =========================================================
+   STATE & SKJERMBYTTE
+   All state holdes i vanlig JS – ingen localStorage/sessionStorage.
+   ========================================================= */
+const skjermer = document.querySelectorAll('.skjerm');
+const prikker  = document.querySelectorAll('#prikker .prikk');
+
+// Bytt til ønsket steg: skjul alle, vis valgt.
+function visSteg(steg) {
+  skjermer.forEach(s => {
+    s.classList.toggle('aktiv', Number(s.dataset.steg) === steg);
+  });
+
+  // Oppdater fremdriftsprikker (steg 0–4 = de 5 prikkene; feiring = alle fylt)
+  prikker.forEach((p, i) => p.classList.toggle('fylt', i <= steg));
+
+  // Rull til toppen så layouten ikke "hopper" mellom skjermer
+  window.scrollTo(0, 0);
+}
+
+// Brukes av svarknappene
+function nesteSteg(steg) {
+  // Sørg for at Nei-knappen er nullstilt dersom man kommer tilbake hit
+  if (steg !== 4) nullstillNei();
+  visSteg(steg);
+}
+
+/* =========================================================
+   SPØRSMÅL 4 – DEN LEKNE "NEI"-KNAPPEN
+   Skal være umulig å trykke: hopper unna på touch OG mus,
+   krymper litt for hvert forsøk og bytter tekst gradvis.
+   ========================================================= */
+const knappNei = document.getElementById('knappNei');
+
+// Teksten endrer seg for hvert unnvikelsesforsøk
+const neiTekster = ['Nei', 'Nei?', 'Helt sikker?', 'Neeei…', 'Prøv igjen 😏', 'Aldri i livet'];
+let neiForsok = 0;
+let neiStorrelse = 1; // skaleringsfaktor som krymper for hvert hopp
+
+// Flytt Nei-knappen til en tilfeldig, trygg posisjon innenfor skjermen
+function flyttNei() {
+  // Første gang: gjør knappen "fixed" så den kan bevege seg fritt
+  if (!knappNei.classList.contains('rommer')) {
+    knappNei.classList.add('rommer');
+  }
+
+  neiForsok++;
+
+  // Bytt tekst gradvis (stopper på siste når vi går tom)
+  knappNei.textContent = neiTekster[Math.min(neiForsok, neiTekster.length - 1)];
+
+  // Krymp litt for hvert forsøk, men ikke under en lesbar minstestørrelse
+  neiStorrelse = Math.max(0.55, neiStorrelse - 0.07);
+  knappNei.style.transform = 'scale(' + neiStorrelse + ')';
+
+  // Regn ut trygt område slik at hele knappen holder seg innenfor skjermen
+  const b = knappNei.getBoundingClientRect();
+  const margin = 12;
+  const maxX = window.innerWidth  - b.width  - margin;
+  const maxY = window.innerHeight - b.height - margin;
+
+  const x = Math.max(margin, Math.random() * maxX);
+  const y = Math.max(margin, Math.random() * maxY);
+
+  knappNei.style.left = x + 'px';
+  knappNei.style.top  = y + 'px';
+}
+
+// KRITISK: reager på pointerdown/touchstart slik at knappen hopper FØR et klikk rekkes.
+// pointerdown dekker både mus, touch og penn i moderne nettlesere.
+knappNei.addEventListener('pointerdown', function (e) {
+  e.preventDefault(); // hindrer at trykket utvikler seg til et klikk
+  flyttNei();
+}, { passive: false });
+
+// Ekstra sikkerhetsnett for eldre touch-nettlesere uten Pointer Events
+knappNei.addEventListener('touchstart', function (e) {
+  e.preventDefault();
+  flyttNei();
+}, { passive: false });
+
+// På desktop: la den også vike når musa nærmer seg (hyggelig detalj, ikke nødvendig på mobil)
+knappNei.addEventListener('mouseenter', flyttNei);
+
+// Skulle noen likevel rekke et klikk – ignorer det fullstendig
+knappNei.addEventListener('click', function (e) {
+  e.preventDefault();
+  flyttNei();
+});
+
+// Nullstill Nei-knappen til utgangspunktet (brukes ved "start på nytt")
+function nullstillNei() {
+  neiForsok = 0;
+  neiStorrelse = 1;
+  knappNei.classList.remove('rommer');
+  knappNei.textContent = neiTekster[0];
+  knappNei.style.transform = '';
+  knappNei.style.left = '';
+  knappNei.style.top  = '';
+}
+
+/* =========================================================
+   FEIRING – konfetti + oppstigende hjerter
+   ========================================================= */
+function visFeiring() {
+  nullstillNei();
+  visSteg(5);
+  slippKonfetti();
+}
+
+const feiringLag = document.getElementById('feiringLag');
+// Dempede, varme farger på konfettien – matcher paletten
+const konfettiFarger = ['#c97b5e', '#e9cdbf', '#8a4b3c', '#f3e3d3', '#d99a7e'];
+
+function slippKonfetti() {
+  feiringLag.innerHTML = ''; // rydd evt. tidligere feiring
+
+  // Litt konfetti – elegant, ikke kaotisk
+  const antallKonfetti = 36;
+  for (let i = 0; i < antallKonfetti; i++) {
+    const k = document.createElement('span');
+    k.className = 'konfetti';
+    k.style.left = Math.random() * 100 + 'vw';
+    k.style.background = konfettiFarger[i % konfettiFarger.length];
+    k.style.setProperty('--tid', (2.2 + Math.random() * 1.6) + 's');
+    k.style.animationDelay = (Math.random() * 0.8) + 's';
+    feiringLag.appendChild(k);
+  }
+
+  // Noen få oppstigende hjerter
+  const antallHjerter = 8;
+  for (let i = 0; i < antallHjerter; i++) {
+    const h = document.createElement('span');
+    h.className = 'hjerte';
+    h.textContent = '❤️';
+    h.style.left = (10 + Math.random() * 80) + 'vw';
+    h.style.setProperty('--tid', (3 + Math.random() * 1.5) + 's');
+    h.style.animationDelay = (Math.random() * 1.2) + 's';
+    feiringLag.appendChild(h);
+  }
+
+  // Rydd opp etter at animasjonene er ferdige
+  setTimeout(() => { feiringLag.innerHTML = ''; }, 5500);
+}
+
+/* =========================================================
+   START PÅ NYTT
+   ========================================================= */
+function startPaaNytt() {
+  nullstillNei();
+  feiringLag.innerHTML = '';
+  visSteg(0);
+}
+</script>
+</body>
+</html>
