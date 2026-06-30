@@ -390,73 +390,77 @@ function nesteSteg(steg) {
 }
 
 /* =========================================================
-   SPØRSMÅL 4 – DEN LEKNE "NEI"-KNAPPEN
-   Skal være umulig å trykke: hopper unna på touch OG mus,
-   krymper litt for hvert forsøk og bytter tekst gradvis.
+   SPØRSMÅL 4 – DE LEKNE "NEI"-KNAPPENE
+   Umulig å trykke: hopper unna ved hvert trykk (touch OG mus).
+   Knappen forsvinner ALDRI – den krymper ikke bort, og for hvert
+   trykk dukker det opp enda en Nei-knapp (opp til et tak), så det
+   blir flere som alle bare fortsetter å flytte på seg.
    ========================================================= */
-const knappNei = document.getElementById('knappNei');
+const knappNei = document.getElementById('knappNei'); // den opprinnelige Nei-knappen
 
-// Teksten endrer seg for hvert unnvikelsesforsøk
-const neiTekster = ['Nei', 'Nei?', 'Helt sikker?', 'Neeei…', 'Prøv igjen 😏', 'Aldri i livet'];
-let neiForsok = 0;
-let neiStorrelse = 1; // skaleringsfaktor som krymper for hvert hopp
+// Tekster som veksler tilfeldig på knappene – juster fritt
+const neiTekster = ['Nei', 'Nei?', 'Helt sikker?', 'Neeei…', 'Prøv igjen 😏', 'Aldri i livet', 'Nope', 'Du mener Ja'];
 
-// Flytt Nei-knappen til en tilfeldig, trygg posisjon innenfor skjermen
-function flyttNei() {
-  // Første gang: gjør knappen "fixed" så den kan bevege seg fritt
-  if (!knappNei.classList.contains('rommer')) {
-    knappNei.classList.add('rommer');
-  }
+const MAKS_NEI = 7;      // hvor mange Nei-knapper det maks kan bli
+let neiKnapper = [];     // alle aktive Nei-knapper (original + kloner)
 
-  neiForsok++;
+// Flytt EN bestemt Nei-knapp til en tilfeldig, trygg posisjon innenfor skjermen
+function flyttKnapp(kn) {
+  // Første gang: ta knappen ut av flyten så den kan bevege seg fritt
+  if (!kn.classList.contains('rommer')) kn.classList.add('rommer');
 
-  // Bytt tekst gradvis (stopper på siste når vi går tom)
-  knappNei.textContent = neiTekster[Math.min(neiForsok, neiTekster.length - 1)];
+  // Liten, fast størrelse – alltid godt lesbar, krymper ALDRI bort
+  kn.style.transform = 'scale(0.9)';
 
-  // Krymp litt for hvert forsøk, men ikke under en lesbar minstestørrelse
-  neiStorrelse = Math.max(0.55, neiStorrelse - 0.07);
-  knappNei.style.transform = 'scale(' + neiStorrelse + ')';
+  // Bytt til en tilfeldig tekst for liv og røre
+  kn.textContent = neiTekster[Math.floor(Math.random() * neiTekster.length)];
 
-  // Regn ut trygt område slik at hele knappen holder seg innenfor skjermen
-  const b = knappNei.getBoundingClientRect();
+  // Hold hele knappen innenfor skjermen
+  const b = kn.getBoundingClientRect();
   const margin = 12;
   const maxX = window.innerWidth  - b.width  - margin;
   const maxY = window.innerHeight - b.height - margin;
-
-  const x = Math.max(margin, Math.random() * maxX);
-  const y = Math.max(margin, Math.random() * maxY);
-
-  knappNei.style.left = x + 'px';
-  knappNei.style.top  = y + 'px';
+  kn.style.left = Math.max(margin, Math.random() * maxX) + 'px';
+  kn.style.top  = Math.max(margin, Math.random() * maxY) + 'px';
 }
 
-// KRITISK: reager på pointerdown/touchstart slik at knappen hopper FØR et klikk rekkes.
-// pointerdown dekker både mus, touch og penn i moderne nettlesere.
-knappNei.addEventListener('pointerdown', function (e) {
-  e.preventDefault(); // hindrer at trykket utvikler seg til et klikk
-  flyttNei();
-}, { passive: false });
+// Lag en ny Nei-knapp (klon av den opprinnelige) og slipp den løs
+function lagNyNei() {
+  if (neiKnapper.length >= MAKS_NEI) return;
+  const ny = knappNei.cloneNode(true);
+  ny.removeAttribute('id');
+  koblePaa(ny);
+  knappNei.parentNode.appendChild(ny);
+  neiKnapper.push(ny);
+  flyttKnapp(ny); // plasser den et tilfeldig sted med en gang
+}
 
-// Ekstra sikkerhetsnett for eldre touch-nettlesere uten Pointer Events
-knappNei.addEventListener('touchstart', function (e) {
-  e.preventDefault();
-  flyttNei();
-}, { passive: false });
+// Hovedrespons når en Nei-knapp trykkes: flytt den + lag eventuelt en ny
+function neiTrykk(kn) {
+  flyttKnapp(kn);
+  lagNyNei();
+}
 
-// Merk: ingen "mouseenter"-logikk. Knappen skal KUN reagere på faktisk trykk,
-// ikke når musepekeren nærmer seg. Den flytter seg idet man trykker, så et
-// "Nei"-trykk aldri registreres – man kommer bare videre ved å trykke "Ja".
+// Koble trykk-håndtering på en Nei-knapp.
+// KRITISK: pointerdown/touchstart fyrer FØR et klikk rekker å registreres,
+// så et "Nei"-trykk teller aldri. Ingen "mouseenter" – den reagerer KUN på
+// faktisk trykk, ikke når musepekeren nærmer seg.
+function koblePaa(kn) {
+  kn.addEventListener('pointerdown', function (e) { e.preventDefault(); neiTrykk(kn); }, { passive: false });
+  kn.addEventListener('touchstart',  function (e) { e.preventDefault(); neiTrykk(kn); }, { passive: false });
+  kn.addEventListener('click',       function (e) { e.preventDefault(); neiTrykk(kn); });
+}
 
-// Skulle noen likevel rekke et klikk – ignorer det fullstendig
-knappNei.addEventListener('click', function (e) {
-  e.preventDefault();
-  flyttNei();
-});
+// Sett opp den opprinnelige knappen
+koblePaa(knappNei);
+neiKnapper.push(knappNei);
 
-// Nullstill Nei-knappen til utgangspunktet (brukes ved "start på nytt")
+// Nullstill alle Nei-knapper til utgangspunktet (brukes ved "start på nytt")
 function nullstillNei() {
-  neiForsok = 0;
-  neiStorrelse = 1;
+  // Fjern alle klonene, behold bare originalen
+  neiKnapper.forEach(kn => { if (kn !== knappNei) kn.remove(); });
+  neiKnapper = [knappNei];
+
   knappNei.classList.remove('rommer');
   knappNei.textContent = neiTekster[0];
   knappNei.style.transform = '';
